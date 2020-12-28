@@ -2,7 +2,10 @@
 
 **Quick Start**
 
-
+Place pictures and only pictures with valid EXIF in DirectoryA
+Prepare a second directory for the result Directory B
+Run the script : 
+**EqDayCalib -i Full_Path_of_Directory_With_Pictures -o Full_Path_of_Target_Directory**
 
 **What?**
 
