@@ -1,5 +1,9 @@
 # eqDayCalib
 
+**Quick Start**
+
+
+
 **What?**
 
 This script aims to perform equatorial mount periodic error chaterization during day time.
@@ -29,4 +33,28 @@ The script does the following:
 
 **Procedure**
 
-Install a vie
+Prequisite :
+- Equatorial mount with Right ascencion motorized !
+- Digital Camera able to save picture with EXIF data
+- Lens or telescope with long focal (200 to 2000 mm depending on pixel size of camera sensor)
+
+Step 1: Take the pictures
+- Install the Digital Camera and the lens telescope.
+- Declination must be set to **90° or -90°** so the movement on the picture appear as a translation
+- Pay special attention to have a good focus on all the range covered during the process
+- Picture format JPEG is fine, pictures must contain **EXIF data**
+- Take a picture each 5 to 10s longer focal requires shorter intervall
+- Take picture to cover 3 to 4 turns of worm (35 to 45 mn)
+
+Step 2 : Download and unzip the script file
+The python script and its dependencies has been packaged with pyinstaller 
+- Download the script here :
+- Unzip it to some place you will remember 
+
+Step 2 : preparation of directories
+- Create 2 directories:
+      - A first directory that contain the pictures and **only** the pictures (any other files will cause the script to stop)
+      - A second working directory where the script will place the results file
+
+
+
