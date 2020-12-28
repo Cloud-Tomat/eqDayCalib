@@ -42,9 +42,13 @@ Step 1: Take the pictures
 - Install the Digital Camera and the lens telescope.
 - Declination must be set to **90° or -90°** so the movement on the picture appear as a translation
 - Pay special attention to have a good focus on all the range covered during the process
-- Picture format JPEG is fine, pictures must contain **EXIF data**
+- Picture format **JPEG is fine**, pictures must contain **EXIF data**
 - Take a picture each 5 to 10s longer focal requires shorter intervall
 - Take picture to cover 3 to 4 turns of worm (35 to 45 mn)
+
+Example of pictures :
+![Example of pictures](https://github.com/Cloud-Tomat/eqDayCalib/blob/main/doc/DSC09709.JPG)
+
 
 Step 2 : Download and unzip the script file
 The python script and its dependencies has been packaged with pyinstaller 
