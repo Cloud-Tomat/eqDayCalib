@@ -16,7 +16,9 @@ from os import listdir
 from os.path import isfile, join
 import exifread
 from datetime import datetime
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
+
+path="/mnt/data/sandbox/eq/s1/"
 
 def GetExifDate(imagePath):
     with open(imagePath, 'rb') as fh:
@@ -86,90 +88,85 @@ def CalcMove(query,train):
     
     dst=math.sqrt(dstX**2+dstY**2)
     angle=math.atan2(dstY,dstX)*360/math.pi
-    print (str(dstX)+"\t"+str(dstY)+"\t"+str(dst)+"\t"+str(angle))
+    #print (str(dstX)+"\t"+str(dstY)+"\t"+str(dst)+"\t"+str(angle))
     
     bottom_right = (top_left[0] + w, top_left[1] + h)
     
-    if False:
-        cv2.rectangle(img,top_left, bottom_right, 255, 2)
-        plt.subplot(121),plt.imshow(res,cmap = 'gray')
-        plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
-        plt.subplot(122),plt.imshow(img,cmap = 'gray')
-        plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
-        plt.suptitle("")
-        plt.show()
-    
-
-
-
-
-    # Show the final image 
-    #cv2.imshow("Matches", query_img) 
-    #cv2.imshow("Matches", roi) 
-
-    #if cv2.waitKey(0) & 0xFF == ord('q'):
-    #    cv2.destroyAllWindows()
+#    if False:
+#        cv2.rectangle(img,top_left, bottom_right, 255, 2)
+#        plt.subplot(121),plt.imshow(res,cmap = 'gray')
+#        plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
+#        plt.subplot(122),plt.imshow(img,cmap = 'gray')
+#        plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
+#        plt.suptitle("")
+#       plt.show()
     
     return (dst,0,angle,0)
 
 
-path="/mnt/data/sandbox/eq/s1/"
-#imagePaths=["DSC09572.JPG","DSC09573.JPG"]
-imagePaths= [[f,GetExifDate(path+f)] for f in listdir(path) if isfile(join(path, f))]
-imagePaths=sorted(imagePaths,key=lambda x: x[1])
-#DSC09584.JPG
 
-#print (CalcMove(path+"DSC09604.JPG",path+"DSC09605.JPG"))
+def ProcessDirectory(path,outputPath):
+    #imagePaths=["DSC09572.JPG","DSC09573.JPG"]
+    
+    print ("processing EXIF")
+    try:
+        imagePaths= [[f,GetExifDate(path+f)] for f in listdir(path) if isfile(join(path, f))]
+    except KeyError:
+        print("Invalid image file or EXIF data in path")
+        raise KeyError
+    imagePaths=sorted(imagePaths,key=lambda x: x[1])
+    
+    results=None
+    
+    
+    print ("\nPerforming pattern matching")
+    print ("file1\tfile2\tDeltaT\tDist\tAngle")
+    for i in range(len(imagePaths)-1):
+        date1=imagePaths[i][1]
+        date2=imagePaths[i+1][1]
+        delta=(date2-date1).total_seconds()
+        dist,stdDist,angle,stdAngle=CalcMove(path+imagePaths[i][0],path+imagePaths[i+1][0])
+        result=[imagePaths[i][0],
+                imagePaths[i+1][0],
+                delta,
+                dist,angle]
+        if results is None:
+           results=[result]
+        else:
+           results.append(result)
+        print (imagePaths[i][0]+ "\t"+ 
+               imagePaths[i+1][0]+ "\t"+
+               str(delta) + "\t"+ 
+               str(dist)+ "\t"+
+               str(angle))
+    
+    results=np.array(results)
+    resultsDist=np.array([float(dist) for dist in results[:,3]])
 
-results=None
+    outputRoot=str(datetime.now()).replace(":","-")+"_Eq_calib_"
+    outputFile=outputPath+outputRoot+"raw_results.csv"
+  
 
-
-
-for i in range(len(imagePaths)-1):
-    date1=imagePaths[i][1]
-    date2=imagePaths[i+1][1]
-    delta=(date2-date1).total_seconds()
-    dist,stdDist,angle,stdAngle=CalcMove(path+imagePaths[i][0],path+imagePaths[i+1][0])
-    result=[imagePaths[i][0],
-            imagePaths[i+1][0],
-            delta,
-            dist,stdDist,angle]
-    if results is None:
-       results=[result]
-    else:
-       results.append(result)
-    #print (results)
-    print (imagePaths[i][0]+ "\t"+ str(delta) + "\t"+ str(dist))
-
-results=np.array(results)
-resultsDist=np.array([float(dist) for dist in results[:,3]])
-
-speed=np.mean(resultsDist)
-scale=SIDERAL_SPEED/speed
-print(scale)
-
-results[:,4]=np.array([(speedPx-speed)*scale for speedPx in resultsDist])
-
-integrale=0.0
-for i in range(len(results[:,4])):
-    integrale+=float(results[i,4])
-    results[i,4]=integrale
-
-
-if True:
-    np.savetxt(path+"../result.csv",  
+    print ("saving to "+outputFile)
+    
+    
+    np.savetxt(outputFile,  
                results, 
                delimiter =";",  
                fmt ='% s',
-               header="file1;file2;DeltaT;dist_Px;error_Arcsec;angle_Deg",
+               header="file1;file2;DeltaT;dist_Px;angle_Deg",
                comments="") 
+    return outputFile,outputRoot
 
+if __name__ == '__main__':
+    #parser = argparse.ArgumentParser(description='EqDayCalib : day charaterization of Equatorial Mount ')
+    #parser.add_argument('-i','--input', help='input directory containing *ONLY* image with valid EXIF', required=True)
+    #parser.add_argument('-o','--output', help='output directory to save results file', required=True)
+    #args = vars(parser.parse_args())
 
-
-#final_img = cv2.drawMatches(query_img, queryKeypoints, 
-#train_img, trainKeypoints, goodMatches,None) 
-#final_img = cv2.resize(final_img, (1000,650)) 
-
-# Show the final image 
-#cv2.imshow("Matches", final_img) 
-#cv2.waitKey(3000) 
+    #print (args["input"])
+    
+    try:
+        ProcessDirectory(path)
+    except :
+        print ("Image Analysis failed")

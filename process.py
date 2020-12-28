@@ -20,60 +20,61 @@ pio.renderers.default='browser'
 path="/mnt/data/sandbox/eq/"
 SIDERAL_SPEED=15.035
 
+def Process (path,outputPath,rootPath):
+    print("\nPost-processing Data")
 
-#read and preprocess CSV
-df=pd.read_csv(path+"result_step6.csv",sep=";") 
-timeStep=np.mean(df['DeltaT'])
-speeds=df["dist_Px"]/timeStep
-scale=SIDERAL_SPEED/np.mean(speeds)
-speeds=speeds*scale
-print(np.mean(speeds))
+    #read and preprocess CSV
+    df=pd.read_csv(path,sep=";") 
+    timeStep=np.mean(df['DeltaT'])
+    speeds=df["dist_Px"]/timeStep
+    
+    #Create x (time axis)
+    x=np.arange(0,len(speeds))*timeStep
+    
+    #Evaluate Constants
+    scale=SIDERAL_SPEED/np.mean(speeds)
+    speeds=speeds*scale
+
+        
+    print("Scale (Arcec/pixel) : " + str(scale))
+    print("Shoot interval(s) : "+ str(timeStep))
+    
+    #Perform Speed integration to retrieve position
+    integrale=0.0
+    positions=np.array([])
+    for i in range(len(speeds)):
+        integrale+=float(speeds[i])*timeStep
+        positions=np.hstack((positions,integrale))
+    
+    #Polynominal regression to remove contant and compensate integraiton drif
+    z = np.polyfit(x,positions , 2)
+    p = np.poly1d(z)
+    
+    #Periodic error (Postion - poly regression)
+    eps=np.array([positions[i]-p(x[i]) for i in range(len(positions))])
+    
+    
+    #Compute Discrete Fourrier Transform
+    epFfts = np.absolute(np.fft.fft(eps))
+    freqs=np.arange(int(len(epFfts)/2))/(len(epFfts)*x[-1]/(len(x)-1))
+    periods=np.array([1/f for f in freqs[1:]])
+    epFfts=epFfts[1:]
+    
+    #Grasph
+    epData=pd.DataFrame({"time(s)":x,"EP(ArcSec)":eps})
+    fig = px.line(epData,x="time(s)",y="EP(ArcSec)")
+    fig.show()
+    
+    dftData=pd.DataFrame({"period(s)":periods,"EP_FFT":epFfts[:len(periods)]})
+    fftFig = px.line(dftData,x="period(s)",y="EP_FFT")
+    fftFig.show()
+    
+    outputFile=outputPath+"/"+rootPath
+    print(outputFile)
+    
+    epData.to_csv(outputFile+"scaled_EP.csv",sep=";")
+    dftData.to_csv(outputFile+"EP_DFT.csv",sep=";")
 
 
-print(scale)
-print(timeStep)
-
-integrale=0.0
-positions=np.array([])
-for i in range(len(speeds)):
-    integrale+=float(speeds[i])*timeStep
-    positions=np.hstack((positions,integrale))
-
-#print (posPx)
-
-x=np.arange(0,len(positions))*timeStep
-#print(x)
-
-z = np.polyfit(x,positions , 2)
-p = np.poly1d(z)
-#print(z)
-
-#Periodic error
-eps=np.array([positions[i]-p(x[i]) for i in range(len(positions))])
-
-
-#Compute Discrete Fourrier Transform
-epFfts = np.absolute(np.fft.fft(eps))
-freqs=np.arange(int(len(epFfts)/2))/(len(epFfts)*x[-1]/(len(x)-1))
-periods=np.array([1/f for f in freqs[:-1])
-epFfts=epFfts[:-1]
-#np.transpose([epPx,epFft])
-
-#print([epPx[:5],epFft[:5]])
-#print(epPx)
-
-epData=pd.DataFrame({"time":x,"EP":eps})
-fig = px.line(epData,x="time",y="EP")
-fig.show()
-
-dftData=pd.DataFrame({"period(s)":periods,"EP_FFT":epFfts[:len(periods)]})
-fftFig = px.line(dftData,x="period(s)",y="EP_FFT")
-fftFig.show()
-
-
-if False:
-    np.savetxt(path+"temp.csv",  
-               epFfts[:int(len(epFfts)/2)], 
-               delimiter =";",  
-               fmt ='% s',
-               comments="") 
+if __name__ == '__main__':
+    Process(path)
