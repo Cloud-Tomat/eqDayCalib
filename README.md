@@ -46,7 +46,8 @@ Step 1: Take the pictures
 - Take a picture each 5 to 10s longer focal requires shorter intervall
 - Take picture to cover 3 to 4 turns of worm (35 to 45 mn)
 
-Example of pictures :
+**Note** : Pictures must contain recognizable elements (not clear blue sky!)
+Example of working pictures :
 ![Example of pictures](https://github.com/Cloud-Tomat/eqDayCalib/blob/main/doc/DSC09709.JPG)
 
 
@@ -59,6 +60,7 @@ Step 2 : preparation of directories
 - Create 2 directories:
       - A first directory that contain the pictures and **only** the pictures (any other files will cause the script to stop)
       - A second working directory where the script will place the results file
+- Open Cmd on Windows go ot the directory where you download the script and 
 
 
 
