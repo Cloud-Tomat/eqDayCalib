@@ -3,6 +3,9 @@
 **What?**
 
 This script aims to perform equatorial mount periodic error chaterization during day time.
+It generates temporal and spectral result csv files and offer basic plots:
+
+
 
 **Why?**
 
@@ -15,6 +18,13 @@ The principle consit in shooting picture at regular interval with long focal len
 Longer the focal will be, higher will be the measurment resolution.
 
 The script does the following:
-1. It calculates the displacement between the pictures,
-2. It deduces from this displacement : Right Ascencsion Speed between pictures
-3. It perform integration of these displacement to calculate 
+- Calculate the displacement between the pictures,
+- Deduce from this displacement Right Ascencsion Speed between pictures
+- Neutralize tracking speed to only keep tracking speed error
+- Perform integration of these trackings speed error  to calculate Position Error
+- Calculate Discrete Fourrier Transform of Position Error
+- Save all that to CSV and Graph it
+
+**Procedure**
+
+Install a vie
