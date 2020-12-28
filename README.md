@@ -5,7 +5,9 @@
 This script aims to perform equatorial mount periodic error chaterization during day time.
 It generates temporal and spectral result csv files and offer basic plots:
 
+![Period Error Plot](https://github.com/Cloud-Tomat/eqDayCalib/blob/main/doc/Periodic_error.png)
 
+![Period Error DFT](https://github.com/Cloud-Tomat/eqDayCalib/blob/main/doc/Dft.png)
 
 **Why?**
 
