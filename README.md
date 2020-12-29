@@ -51,7 +51,7 @@ Step 1: Take the pictures
 
 **Note** : Pictures must contain recognizable elements (not clear blue sky!)
 Example of working pictures :
-![Example of pictures](https://github.com/Cloud-Tomat/eqDayCalib/blob/main/doc/DSC09709.JPG)
+![Example of pictures](https://github.com/Cloud-Tomat/eqDayCalib/blob/main/doc/DSC09710_pipp.gif)
 
 
 Step 2 : Download and unzip the script file
