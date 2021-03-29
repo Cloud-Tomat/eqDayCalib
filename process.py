@@ -25,6 +25,9 @@ def Process (path,outputPath,rootPath):
 
     #read and preprocess CSV
     df=pd.read_csv(path,sep=";") 
+    # print(df)
+    # df=df[:60]
+    
     timeStep=np.mean(df['DeltaT'])
     speeds=df["dist_Px"]/timeStep
     
@@ -58,15 +61,15 @@ def Process (path,outputPath,rootPath):
     epFfts = np.absolute(np.fft.fft(eps))
     freqs=np.arange(int(len(epFfts)/2))/(len(epFfts)*x[-1]/(len(x)-1))
     periods=np.array([1/f for f in freqs[1:]])
-    epFfts=epFfts[1:]
+    epFfts=epFfts[1:]/(len(epFfts)/2)
     
     #Grasph
     epData=pd.DataFrame({"time(s)":x,"EP(ArcSec)":eps})
     fig = px.line(epData,x="time(s)",y="EP(ArcSec)")
     fig.show()
     
-    dftData=pd.DataFrame({"period(s)":periods,"EP_FFT":epFfts[:len(periods)]})
-    fftFig = px.line(dftData,x="period(s)",y="EP_FFT")
+    dftData=pd.DataFrame({"period(s)":periods,"EP_FFT(ArcSec)":epFfts[:len(periods)]})
+    fftFig = px.line(dftData,x="period(s)",y="EP_FFT(ArcSec")
     fftFig.show()
     
     outputFile=outputPath+"/"+rootPath
@@ -77,4 +80,7 @@ def Process (path,outputPath,rootPath):
 
 
 if __name__ == '__main__':
-    Process(path)
+    outputFile="/mnt/data/sandbox/test_image/out/2021-03-29 21-37-42.722138_Eq_calib_raw_results.csv"
+    outputRoot="2021-03-27 22-04-20.155802_Eq_calib_"
+    outputPath="/mnt/data/sandbox/test_image/out/"
+    Process(outputFile,outputPath,outputRoot)
