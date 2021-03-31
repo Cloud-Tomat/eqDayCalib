@@ -69,7 +69,7 @@ def Process (path,outputPath,rootPath):
     fig.show()
     
     dftData=pd.DataFrame({"period(s)":periods,"EP_FFT(ArcSec)":epFfts[:len(periods)]})
-    fftFig = px.line(dftData,x="period(s)",y="EP_FFT(ArcSec")
+    fftFig = px.line(dftData,x="period(s)",y="EP_FFT(ArcSec)")
     fftFig.show()
     
     outputFile=outputPath+"/"+rootPath

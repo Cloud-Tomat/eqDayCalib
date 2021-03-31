@@ -92,84 +92,46 @@ def crop(frame,sizeX,sizeY,offsetX=0,offsetY=0):
     return frameCrop
 
 
-def calcMove_old(im1Path,im2Path):
-    if debug:
-       fig = plt.figure(figsize=(8, 3))
-       ax1 = plt.subplot(1, 3, 1)
-       ax2 = plt.subplot(1, 3, 2, sharex=ax1, sharey=ax1)
-       ax3 = plt.subplot(1, 3, 3)
-    
-    im1Read = cv2.imread(im1Path) 
-    im2Read = cv2.imread(im2Path)
-    
-    im1=crop(im1Read,800,800)
-    im2=crop(im2Read,800,800)
-    
-    im1=im1.astype(np.float32)
-    im2=im2.astype(np.float32)
-    
-    
-    mapper = cv2.reg_MapperGradShift()
-    mappPyr = cv2.reg_MapperPyramid(mapper)
-    
-    resMap = mappPyr.calculate(im1, im2)
-    mapShift = cv2.reg.MapTypeCaster_toShift(resMap)
-    solution=mapShift.getShift()
-    shift=[solution[0][0],solution[1][0]]
-    
-    if debug    :  
-        ax1.imshow(im1Read, cmap='gray')
-        ax1.set_axis_off()
-        ax1.set_title('Reference image')
-        
-        ax2.imshow(im2Read.real, cmap='gray')
-        ax2.set_axis_off()
-        ax2.set_title('Offset image')
-        plt.show()        
-    
-    norm=np.linalg.norm(shift)
-    angle=math.atan2(shift[1], shift[0])*180./math.pi
-    
-    return (norm,angle)
+def fitsToBwImg(imPath):
+        # convert to uint 8
+        hdul = fits.open(imPath)
+        img = cv2.normalize(src=hdul[0].data, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+        if  len(hdul[0].data.shape)==2:
+            #Mono chanel FITS (2 dimensions, no color channel)
+            pass
+        elif len(hdul[0].data.shape)==3:
+            #Color FITS (3 dimension, first dim is color)
+            #must be swaped to match with opencv np array
+            img = np.swapaxes(img, 0, 2)
+            img = np.swapaxes(img, 0, 1)
+            #gray scale
+            img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY) 
+
+        return img
+
 
 def calcMove(im1Path,im2Path):
     format = "DLSR"
 
     if ".fit" in im1Path or ".FIT" in im1Path:
         format = "FITS_MONO"
-
-        # convert to uint 8
-        hdul = fits.open(im1Path)
-        ref = cv2.normalize(src=hdul[0].data, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-
-        hdul = fits.open(im2Path)
-        new = cv2.normalize(src=hdul[0].data, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-
+        ref=fitsToBwImg(im1Path)
+        new=fitsToBwImg(im2Path)
+        refBw = ref
+        newBw = new 
     else:
         ref = cv2.imread(im1Path) 
         new = cv2.imread(im2Path)  
-    
+        refBw = cv2.cvtColor(ref,cv2.COLOR_BGR2GRAY) 
+        newBw = cv2.cvtColor(new, cv2.COLOR_BGR2GRAY) 
 
 
     offset=60
 
     #Prepare the Images
     #------------------
-
-    
-    
-    #Scale the image to increase accuracy
     factor=1
-    if factor!=1:
-        width = int(ref.shape[1] * factor)
-        height = int(ref.shape[0] * factor)
-        ref=cv2.resize(ref,(width, height))
-        new=cv2.resize(new, (width, height))
 
-    # Convert to grayscale 
-    refBw = cv2.cvtColor(ref,cv2.COLOR_BGR2GRAY) 
-    newBw = cv2.cvtColor(new, cv2.COLOR_BGR2GRAY) 
-    
     #crop New img center, 10% of the image
     w = new.shape[1] 
     h = new.shape[0]
